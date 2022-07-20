@@ -23,8 +23,7 @@ emailarray = email.split(/\n/)
 		end	
 	end
 
-#Note: /^Content\-Type: application\/octet-stream(.*)/
-#Overwrite To: fields
+#Overwrite To: field and drop the duplicates
 recstring = recipients.join(", ")
 	commatized = emailarray.each_with_index do |c, i|
 		if c =~ to
