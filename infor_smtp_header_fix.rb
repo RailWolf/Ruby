@@ -11,6 +11,7 @@ recipients = []
 sender = ""
 to = /^To: (.*)/
 from = /^From: (.*)/
+seen = false
 
 #Gather all recipients and the sender
 emailarray = email.split(/\n/)
@@ -25,17 +26,19 @@ emailarray = email.split(/\n/)
 #Note: /^Content\-Type: application\/octet-stream(.*)/
 #Overwrite To: fields
 recstring = recipients.join(", ")
-	commatized = emailarray.each do |c|
+	commatized = emailarray.each_with_index do |c, i|
 		if c =~ to
+			if !seen
 			  c = c.gsub!(to, "To: #{recstring}")
+			  seen = true
+			else
+			  emailarray.delete_at(i)
+			end
 		end
 	end
 		
 helodomain = sender.gsub(/(.*)@/, '')
-
-#There are now duplicate To: lines that .uniq will take care of.
-#Need to make sure this doesn't trample on anything else, maybe a pattern match.
-message = commatized.uniq.join("\n")
+message = commatized.join("\n")
 smtp = Net::SMTP.new(relayhost, 25)
  smtp.start(helo: helodomain) do |smtp|
    smtp.send_message message,
