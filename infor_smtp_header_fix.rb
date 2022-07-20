@@ -4,36 +4,41 @@
 #2022 Brandon "RailWolf" Calhoun
 require 'net/smtp'
 
+#Read STDIN from postfix
 email = STDIN.read
 relayhost = "smtp-relay.gmail.com"
 recipients = []
 sender = ""
+to = /^To: (.*)/
+from = /^From: (.*)/
 
+#Gather all recipients and the sender
 emailarray = email.split(/\n/)
 	emailarray.each do |c|
-		if c =~ /^To: (.*)/
+		if c =~ to
 			recipients <<  c.gsub('To: ', '')
-		elsif c =~ /^From: (.*)/
+		elsif c =~ from
 			sender = c.gsub('From: ', '')
 		end	
 	end
 
+#Note: /^Content\-Type: application\/octet-stream(.*)/
+#Overwrite To: fields
 recstring = recipients.join(", ")
 	commatized = emailarray.each do |c|
-		if c =~ /^To: (.*)/
-			c = c.gsub!(/^To: (.*)$/, "To: #{recstring}")
+		if c =~ to
+			  c = c.gsub!(to, "To: #{recstring}")
 		end
 	end
 		
-helodomain = sender.gsub(/(.*)@/, "")
+helodomain = sender.gsub(/(.*)@/, '')
 
-#So there are now duplicate To: lines that .uniq will take care of.
+#There are now duplicate To: lines that .uniq will take care of.
 #Need to make sure this doesn't trample on anything else, maybe a pattern match.
-output = commatized.uniq.join("\n")
-
+message = commatized.uniq.join("\n")
 smtp = Net::SMTP.new(relayhost, 25)
  smtp.start(helo: helodomain) do |smtp|
-   smtp.send_message output,
+   smtp.send_message message,
        sender,
        [ recipients ]
  smtp.finish
