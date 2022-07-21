@@ -41,10 +41,14 @@ end
 helodomain = sender.gsub(/(.*)@/, '')
 message = newemail.join("\n")
 
+begin
 smtp = Net::SMTP.new(relayhost, 25)
  smtp.start(helo: helodomain) do |smtp|
    smtp.send_message message,
        sender,
        [ recipients ]
  smtp.finish
+ rescue Net::OpenTimeout
+ retry
+end
 end
