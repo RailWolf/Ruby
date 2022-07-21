@@ -16,13 +16,13 @@ seen = false
 
 #Gather all recipients and the sender
 email = email.split(/\n/)
-	email.each do |c|
-		if c =~ to
-			recipients <<  c.gsub('To: ', '')
-		elsif c =~ from
-			sender = c.gsub('From: ', '')
-		end	
-	end
+email.each do |c|
+	if c =~ to
+		recipients <<  c.gsub('To: ', '')
+	elsif c =~ from
+		sender = c.gsub('From: ', '')
+	end	
+end
 
 #Form a new array with a fixed up To: field
 recstring = recipients.join(", ")
