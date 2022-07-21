@@ -1,13 +1,14 @@
 #!/opt/bin/ruby
 #RFC 5322 fix for Infor OS ION Alert emails. 
 #Infor incorrectly adds multiple To: lines in the header instead of using a single To: line with a comma-delimited list. This fixes it.
-#2022 Brandon "RailWolf" Calhoun
+#2022 Brandon Calhoun
 require 'net/smtp'
 
 #Read STDIN from postfix
 email = STDIN.read
 relayhost = "smtp-relay.gmail.com"
 recipients = []
+newmail = []
 sender = ""
 to = /^To: (.*)/
 from = /^From: (.*)/
@@ -23,21 +24,23 @@ emailarray = email.split(/\n/)
 		end	
 	end
 
-#Overwrite To: field and drop the duplicates
+#Overwrite To: fields
 recstring = recipients.join(", ")
-	commatized = emailarray.each_with_index do |c, i|
-		if c =~ to
-			if !seen
-			  c = c.gsub!(to, "To: #{recstring}")
-			  seen = true
-			else
-			  emailarray.delete_at(i)
-			end
+emailarray.each_with_index do |c, i|
+	if c !~ to
+		newmail << c
+	elsif c =~ to
+		if	!seen
+			c = c.gsub!(to, "To: #{recstring}")
+			seen = true
+			newmail << c
 		end
 	end
+end
 		
 helodomain = sender.gsub(/(.*)@/, '')
-message = commatized.join("\n")
+message = newmail.join("\n")
+
 smtp = Net::SMTP.new(relayhost, 25)
  smtp.start(helo: helodomain) do |smtp|
    smtp.send_message message,
