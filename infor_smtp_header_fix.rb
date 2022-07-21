@@ -8,15 +8,15 @@ require 'net/smtp'
 email = STDIN.read
 relayhost = "smtp-relay.gmail.com"
 recipients = []
-newmail = []
+newemail = []
 sender = ""
 to = /^To: (.*)/
 from = /^From: (.*)/
 seen = false
 
 #Gather all recipients and the sender
-emailarray = email.split(/\n/)
-	emailarray.each do |c|
+email = email.split(/\n/)
+	email.each do |c|
 		if c =~ to
 			recipients <<  c.gsub('To: ', '')
 		elsif c =~ from
@@ -26,20 +26,20 @@ emailarray = email.split(/\n/)
 
 #Form a new array with a fixed up To: field
 recstring = recipients.join(", ")
-emailarray.each_with_index do |c, i|
+email.each_with_index do |c, i|
 	if c !~ to
-		newmail << c
+		newemail << c
 	elsif c =~ to
 		if	!seen
 			c = c.gsub!(to, "To: #{recstring}")
 			seen = true
-			newmail << c
+			newemail << c
 		end
 	end
 end
 		
 helodomain = sender.gsub(/(.*)@/, '')
-message = newmail.join("\n")
+message = newemail.join("\n")
 
 smtp = Net::SMTP.new(relayhost, 25)
  smtp.start(helo: helodomain) do |smtp|
