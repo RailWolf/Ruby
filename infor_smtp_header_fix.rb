@@ -24,7 +24,7 @@ emailarray = email.split(/\n/)
 		end	
 	end
 
-#Overwrite To: fields
+#Form a new array with a fixed up To: field
 recstring = recipients.join(", ")
 emailarray.each_with_index do |c, i|
 	if c !~ to
